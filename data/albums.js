@@ -44,8 +44,8 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
 
      let date = new Date(releaseDate);
      if(isValidDate(date)){
-       res.status(400).json({message:'Release date should be in valid data format.'});
-       return;
+       throw new Error('Release date should be in valid data format.');
+       
      }
 
      let dd = String(date.getDate()).padStart(2,'0');
@@ -62,16 +62,16 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
      current = mm1 + '/' + dd1 + '/' + yyyy1;
 
      if(Number(yyyy) < 1900 || Number(yyyy) > (Number(yyyy1) + 1) ){
-       res.status(400).json({ error:"Error in the date "}) 
+       throw new Error("Error in the date "); 
      }
 
      if(dd < 0 || mm < 0 || yyyy < 0  ){
-      res.status(400).json({ error:"Error: date cannot cannot be negative"});
-      return;
+      throw new Error("Error: date cannot cannot be negative");
+      
      }
      if( mm > 12){
-      res.status(400).json({ error:"Error: month greater than 12"});
-      return;
+      throw new Error("Error: month greater than 12");
+      
      }
 
      if(Array.isArray(tracks)){
@@ -364,5 +364,6 @@ function checkStrings(bandId, title, releaseDate){
     create,
     getAll,
     get,
+    remove
 
   }
