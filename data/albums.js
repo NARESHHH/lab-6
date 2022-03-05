@@ -1,4 +1,4 @@
-const { ObjectId } = require('mongodb');
+const { ObjectId, FindOperators } = require('mongodb');
 const collections = require("../config/mongoCollection");
 const bands = collections.bands;
 const band = require('./bands');
@@ -10,7 +10,7 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
         throw error;
     }
 
-    let error1 = checkArgumentIsString(bandId,title,releaseDate);
+    let error1 = checkStrings(bandId,title,releaseDate);
     if(error1 !== undefined){
         throw error1;
     }
@@ -152,6 +152,130 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
       }
 };
 
+const getAll =  async (bandId) => {
+  if(!(bandId)){
+    throw new Error("ERROR: Id parameter required !!!!!");
+  }
+  if(typeof bandId !== 'string'){
+    throw new Error("ERROR: id parameter need to be type of string");
+  }
+  
+  if (bandId == null || bandId.trim() === ''|| bandId === undefined ){
+    throw new Error("parameter is empty");
+  }
+
+  if (typeof bandId === "string") {
+      bandId = ObjectId(bandId);
+  } else if (!(bandId instanceof ObjectId)) {
+      throw new Error("ERROR: Id parameter needs to be object type");
+  }
+  const bandsCollection = await bands();
+  const band = await bandsCollection.find({_id : bandId});
+
+  if(band === null){
+    throw new Error("Error: No band with following details found");
+  }
+
+  let albums = bands.albums;
+
+  for(let ele of albums){
+    ele._id = ele._id.toString();
+  }
+
+  return albums;
+}
+
+const get = async (albumId) => {
+  if(!albumId){
+    throw new Error("Error: Album Id required");
+  }
+  if(albumId.length !== 24){
+    throw new Error("Error : Invalid Album Id");
+  }
+  if(typeof albumId !== 'string'){
+    throw new Error("ERROR: id parameter need to be type of string");
+  }
+  
+  if (albumId == null || albumId.trim() === ''|| albumId === undefined ){
+    throw new Error("parameter is empty");
+  }
+
+  if (typeof albumId === "string") {
+      bandId = ObjectId(albumId);
+  } else if (!(albumId instanceof ObjectId)) {
+      throw new Error("ERROR: Id parameter needs to be object type");
+  }
+
+  const bandsCollection = await bands();
+  const bandData = await bandsCollection.findOne({'albums._id': albumId});
+  if(bandData === null){
+    throw new Error(`No bands with id ${albumId}`);
+  }
+
+  if(bandData.albums.length === 0){
+    return bandData.albums;
+  }
+  for(let albums of bandData.albums){
+    if(albums._id.toString() === albumId.toString()){
+      return albums;
+    }
+  }
+
+}
+
+const remove = async () => {
+  if(!albumId){
+    throw new Error("Error: Album Id required");
+  }
+  if(albumId.length !== 24){
+    throw new Error("Error : Invalid Album Id");
+  }
+  if(typeof albumId !== 'string'){
+    throw new Error("ERROR: id parameter need to be type of string");
+  }
+  
+  if (albumId == null || albumId.trim() === ''|| albumId === undefined ){
+    throw new Error("parameter is empty");
+  }
+
+  if (typeof albumId === "string") {
+      bandId = ObjectId(albumId);
+  } else if (!(albumId instanceof ObjectId)) {
+      throw new Error("ERROR: Id parameter needs to be object type");
+  }
+
+  var rating = 0;
+  const bandsCollection = await bands();
+  const bandData = await bandsCollection.findOne({'albums._id' : albumId });
+  if(bandData === null ){
+    throw new Error(`No band with id ${albumId}`);
+  }else{
+    for(let album of bandData.albums){
+      if(album._id.toString() === albumId.toString()){
+        rating  = album.rating;
+      }
+    }
+  }
+
+  let totalRating = 0;
+  let c = 0;
+
+  let albums = bands.albums;
+
+  if(albums.length !== 0){
+    for(let a of albums){
+      totalRating = totalRating + a.rating;
+      c=c+1;
+    }
+  }
+
+  let overallRatingAverage = (totalRating-rating) / (count - 1);
+  overallRatingAverage = Math.round((overallRatingAverage + Number.EPSILON) * 100) / 100;
+
+  let bandUpdateInfo
+
+}
+
 function isValidDate(date) {
   return date && Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date.getTime());
 }
@@ -204,5 +328,7 @@ function checkStrings(bandId, title, releaseDate){
 
   module.exports = {
     create,
-    
+    getAll,
+    get,
+
   }
