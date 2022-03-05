@@ -171,50 +171,6 @@ const remove = async (id) => {
 
 }
 
-const rename = async (id,newName) => {
-  if(!(id)){
-    throw new Error("ERROR: Id parameter required !!!!!");
-  }
-  if(typeof id !== 'string'){
-    throw new Error("ERROR: id parameter need to be type of string");
-  }
-  
-  if (id == null || id.trim() === ''|| id === undefined ){
-    throw new Error("parameter is empty");
-  }
-
-  if (typeof id === "string") {
-      id = ObjectId(id);
-  } else if (!(id instanceof ObjectId)) {
-      throw new Error("ERROR: Id parameter needs to be object type");
-  }
-  
-  id = ObjectId(id);
-
-  const bandCollection = await bands();
-
-  const band = await bandCollection.findOne({_id: id});
-
-  if (band === null) {
-    throw new Error("No band found with the provided");
-  }
-
-//if the newWebsite is the same as the current value stored in the database, the method should throw. 
-if(band.name === newName){
-    throw new Error("ERROR : Old name and New name can not be same");
- }
-
- return await bandCollection.updateOne({_id: id}, {$set: {name: newName}})
-        .then(async function (updateInfo) {
-            if (updateInfo.nModified === 0) {
-                throw new Error("Could not update band name successfully");
-            }
-            return await get(id.toString());
-        });
-
-}
-
-
 const update = async (id, name, genre, website, recordLabel, bandMembers, yearFormed) =>{
 
   if(!id){
@@ -393,6 +349,7 @@ function checkStrings(name, website, recordLabel){
   }
 }
 
+
 function checkParms(name,genre,website,recordLabel,bandMembers,yearFormed){
   if(!name){
       throw new Error("Name parameter is not provided");
@@ -414,6 +371,7 @@ function checkParms(name,genre,website,recordLabel,bandMembers,yearFormed){
   }
   
 }
+
 
 function checkIsNull(name, website, recordLabel){
   if (name == null || name.trim() === ''){
