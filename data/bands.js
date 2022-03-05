@@ -79,7 +79,6 @@ const band = {
   yearFormed: yearFormed,
   albums: [],
   overallRating: 0,
-
 }
 
 const bandsCollection = await bands();
@@ -218,10 +217,9 @@ if(band.name === newName){
 
 const update = async (id, name, genre, website, recordLabel, bandMembers, yearFormed) =>{
 
-
   if(!id){
     throw new Error("Argument id is not provided");
-}
+  }
 
 //If the id provided is not a string
 if (!(typeof id == 'string')) {
@@ -236,7 +234,8 @@ throw new Error("parameter is empty");
 //If the id provided is not a valid ObjectId, the method should throw.
 if (typeof id === "string") {
     id = ObjectId(id);
-} else if (!(id instanceof ObjectId)) {
+} 
+else if (!(id instanceof ObjectId)) {
     throw new Error("Invalid argument type : id");
 }
 
@@ -314,6 +313,71 @@ let bandUpdateInfo = {
 
 id = ObjectId(id);
 
+const bandsCollection = await bands();
+
+const banddata = await bandsCollection.findOne({ _id: id });
+
+if (banddata === null) {
+    throw new Error("No restraurant with id: ${id} present");
+}
+
+let checkname = banddata.name === name;
+let checkWebsite = banddata.website === website;
+let checkRecordLabel = banddata.recordLabel === recordLabel;
+let checkyearFormed = banddata.yearFormed === yearFormed;
+
+
+let arr1 = [];
+arr1 = banddate.genre;
+
+let arr2 = [];
+arr2 = genre;
+
+let checkGenre = true;
+
+if(arr1.length === arr2.length){
+  for (var i = 0; i < arr1.length; ++i) {
+        if (arr1[i] !== arr2[i]){
+            checkGenre = false;
+        }
+  }
+}
+
+else{
+  checkGenre = false;
+}
+
+let arr3 = [];
+arr3 = banddate.bandMembers;
+
+let arr4 = [];
+arr4 = bandMembers;
+
+let checkbandMembers = true;
+
+if(arr1.length === arr2.length){
+  for (var i = 0; i < arr1.length; ++i) {
+        if (arr1[i] !== arr2[i]){
+            checkbandMembers = false;
+        }
+  }
+}
+else{
+  checkbandMembers = false;
+}
+
+if(checkname && checkWebsite && checkRecordLabel && checkyearFormed && checkGenre && checkbandMembers){
+  throw new Error("Could not update band database, requested data is already present in the database");
+}
+
+return await bandsCollection.updateOne({_id: id},{ $set: bandUpdateInfo})
+.then(async function (updateInfo) {
+    if (updateInfo.modifiedCount === 0) {
+        throw new Error("Could not update bands successfully");
+    }
+    return await get(id.toString());
+});
+
 }
 
 
@@ -327,9 +391,6 @@ function checkStrings(name, website, recordLabel){
   if (!(typeof recordLabel == 'string')) {
     throw new Error("Parameter is not string type");
   }
-
-
-
 }
 
 function checkParms(name,genre,website,recordLabel,bandMembers,yearFormed){
@@ -374,6 +435,6 @@ module.exports = {
   get,
   getAll,
   remove,
-  rename
-
+  rename,
+  update
 };
