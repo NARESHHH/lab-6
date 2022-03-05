@@ -272,7 +272,41 @@ const remove = async () => {
   let overallRatingAverage = (totalRating-rating) / (count - 1);
   overallRatingAverage = Math.round((overallRatingAverage + Number.EPSILON) * 100) / 100;
 
-  let bandUpdateInfo
+  let bandUpdateInfo = {
+    overallRating: overalRatingAverage
+}
+
+//,{ $set: restaurantUpdateInfo},
+const updatedInfo = await bandsCollection.updateOne(
+    { _id: bandData._id },
+    { $pull: { albums: { _id: albumId }}});
+
+
+if (updatedInfo.modifiedCount === 0) {
+      throw new Error('could not remove album');
+}
+else {
+  //update modifief overallRating
+  const bandData = await bandsCollection.findOne({_id: bandData._id});
+  if (bandData !== null) {
+      if(bandData.albums.length === 0){
+          bandUpdateInfo = {
+          overallRating: 0
+      }
+      }
+  }else{
+      throw new Error('Band with Id not found');
+  }
+      
+  const updatedInfo1 = await bandsCollection.updateOne(
+          { _id: bandData._id },{ $set: bandUpdateInfo}
+ );        
+  
+      if (updatedInfo1.modifiedCount === 0) {
+          throw new Error('Could not update band successfully');
+      }
+      return {"AlbumId": albumId.toString(), "deleted": true};
+  }
 
 }
 
