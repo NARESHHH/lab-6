@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
     
     const bandRequest = req.body;
   
-    if(Object.keys(req.body).length > 7 || Object.keys(req.body).length < 7){
+    if(Object.keys(req.body).length > 6 || Object.keys(req.body).length < 6){
         res.status(400).json({ error: 'current object does not match with given schema '});
         return;
     }
@@ -75,7 +75,7 @@ router.post('/', async (req, res) => {
         return;
   }
 
-  if(!(website.match("^(http:\/\/www.)([A-Za-z]{5,})(.com)$"))){
+  if(!(bandRequest.website.match("^(http:\/\/www.)([A-Za-z]{5,})(.com)$"))){
     res.status(400).json({ error: 'Error: URL is not valid'});
     return;
   }
@@ -112,12 +112,12 @@ router.post('/', async (req, res) => {
       }
   }
 }
-if(isNaN(yearFormed)){
+if(isNaN(bandRequest.yearFormed)){
   res.status(400).json({ error: "ERROR: yearFormed needs to be a number"}); 
   return; 
 }
 
-if(yearFormed < 1900 || yearFormed > (new Date().getFullYear)){
+if(bandRequest.yearFormed < 1900 || bandRequest.yearFormed > (new Date().getFullYear)){
   res.status(400).json({ error: "ERROR: yearFormed date is invalid"}); 
   return; 
   
@@ -153,13 +153,13 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
 
   const bandRequest = req.body;
-  if (!restaurant) {
-    res.status(400).json({ error: 'You must provide data to create a review' });
+  if (!bandRequest) {
+    res.status(400).json({ error: 'You must provide data to create a album' });
     return;
   }
 
-  if(Object.keys(restaurant).length === 0){
-    res.status(400).json({ error: 'You must provide data to create a restaurant'});
+  if(Object.keys(bandRequest).length === 0){
+    res.status(400).json({ error: 'You must provide data to create a band'});
     return;
   }
 
@@ -207,7 +207,7 @@ if(!(bandRequest.website.endsWith(".com"))){
       return;
 }
 
-if(!(website.match("^(http:\/\/www.)([A-Za-z]{5,})(.com)$"))){
+if(!(bandRequest.website.match("^(http:\/\/www.)([A-Za-z]{5,})(.com)$"))){
   res.status(400).json({ error: 'Error: URL is not valid'});
   return;
 }
@@ -244,12 +244,12 @@ if(!(Array.isArray(bandRequest.bandMembers)) && !(Array.isArray(bandRequest.genr
     }
 }
 }
-if(isNaN(yearFormed)){
+if(isNaN(bandRequest.yearFormed)){
 res.status(400).json({ error: "ERROR: yearFormed needs to be a number"}); 
 return; 
 }
 
-if(yearFormed < 1900 || yearFormed > (new Date().getFullYear)){
+if(bandRequest.yearFormed < 1900 || bandRequest.yearFormed > (new Date().getFullYear)){
 res.status(400).json({ error: "ERROR: yearFormed date is invalid"}); 
 return; 
 
@@ -267,6 +267,7 @@ try {
 const rest = await bandsData.update(req.params.id,bandRequest.name, bandRequest.genre, bandRequest.website, bandRequest.recordLabel, bandRequest.bandMembers, bandRequest.yearFormed);
 res.status(200).json(rest);
 } catch (e) {
+  
 res.status(400).json({ error: e.message });
 }
 });

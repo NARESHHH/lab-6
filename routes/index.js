@@ -1,9 +1,9 @@
-const restaurantsRoutes = require('./bands');
-const reviewsRoutes = require('./albums');
+const bandRoutes = require('./bands');
+const albumRoutes = require('./albums');
 
 const constructorMethod = (app) => {
-  app.use('/bands', restaurantsRoutes);
-  app.use('/albums', reviewsRoutes);
+  app.use('/bands', bandRoutes);
+  app.use('/albums', albumRoutes);
 
   app.use('*', (req, res) => {
     res.status(404).json({ error: 'Not found' });

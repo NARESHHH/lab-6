@@ -1,7 +1,10 @@
-const { ObjectId, FindOperators } = require('mongodb');
+const { ObjectId } = require('mongodb');
+
 const collections = require("../config/mongoCollection");
+
 const bands = collections.bands;
-const band = require('./bands');
+
+const banddata = require('./bands');
 
 const create = async (bandId, title, releaseDate, tracks, rating) => {
 
@@ -27,7 +30,7 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
        throw new Error("Invalid bandId parameter passed");
      }
 
-     const bands = await bands();
+     const bands = await bands1();
 
      const band = await bands.findOne({_id: bandId });
 
@@ -38,12 +41,12 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
      if(typeof rating === "string"){
        throw new Error("Rating cannot be of string type");
      }
-     if(rating > 1 || rating < 5){
+     if(rating < 1 || rating > 5){
        throw new Error("Rating should be between 1 to 5.")
      }
 
      let date = new Date(releaseDate);
-     if(isValidDate(date)){
+     if(!isValidDate(date)){
        throw new Error('Release date should be in valid data format.');
        
      }
@@ -101,13 +104,15 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
 
       }
 
-      const bandsCollection = await bands();
+      
+      const bandsCollection = await bands1();
 
       let totalRating = 0;
       let c = 0;
 
-      let albums = bands.albums;
+      let albums = band.albums;
 
+      
       if(albums.length !== 0){
         for(let a of albums){
           totalRating = totalRating + a.rating;
@@ -137,10 +142,10 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
       );
 
       if(updatedInfo.modifiedCount === 0){
-        throw "Could not update restaurant successfully";
+        throw "Could not update bands successfully";
       }
 
-      const bandData = await band.get(bandId.toString());
+      const bandData = await banddata.get(bandId.toString());
 
       for(let ele of bandData.albums){
         ele._id = ele._id.toString();
@@ -169,20 +174,23 @@ const getAll =  async (bandId) => {
   } else if (!(bandId instanceof ObjectId)) {
       throw new Error("ERROR: Id parameter needs to be object type");
   }
-  const bandsCollection = await bands();
+  const bandsCollection = await bands1();
   const band = await bandsCollection.find({_id : bandId});
 
   if(band === null){
     throw new Error("Error: No band with following details found");
   }
-
-  let albums = bands.albums;
-
-  for(let ele of albums){
+  
+  let albums = await banddata.get(bandId.toString());
+  
+  
+  let albumsss = albums.albums;
+  
+  for(let ele of albumsss){
     ele._id = ele._id.toString();
   }
 
-  return albums;
+  return albumsss;
 }
 
 const get = async (albumId) => {
@@ -207,7 +215,10 @@ const get = async (albumId) => {
   }
 
   const bandsCollection = await bands();
-  const bandData = await bandsCollection.findOne({'albums._id': albumId});
+  const bandData = await bandsCollection.findOne({"albums._id": albumId});
+  
+  const allbands = await banddata.getAll();
+  console.log(allbands);
   if(bandData === null){
     throw new Error(`No bands with id ${albumId}`);
   }
@@ -276,7 +287,7 @@ const remove = async () => {
     overallRating: overalRatingAverage
 }
 
-//,{ $set: restaurantUpdateInfo},
+
 const updatedInfo = await bandsCollection.updateOne(
     { _id: bandData._id },
     { $pull: { albums: { _id: albumId }}});
@@ -367,3 +378,8 @@ function checkStrings(bandId, title, releaseDate){
     remove
 
   }
+
+  async function Main(){
+   // console.log(await get("622410b8b7460b5744beb7f9"));
+  }
+  Main()

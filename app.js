@@ -1,9 +1,12 @@
-const bands = require('./data/bands');
+const express = require('express');
+const app = express();
+const configRoutes = require('./routes');
 
-async function Main(){
+app.use(express.json());
 
-    const pinkFloyd = await bands.create("Pink Floyd", ["Progressive Rock", "Psychedelic rock", "Classic Rock"], "http://www.pinkfloyd.com", "EMI", ["Roger Waters", "David Gilmour", "Nick Mason", "Richard Wright", "Sid Barrett" ], 1965);
-    console.log(pinkFloyd);
-}
+configRoutes(app);
 
-Main()
+app.listen(3000, () => {
+  console.log("We've now got a server!");
+  console.log('Your routes will be running on http://localhost:3000');
+});

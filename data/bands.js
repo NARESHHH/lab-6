@@ -38,10 +38,11 @@ const create = async (name,genre,website,recordLabel,bandMembers,yearFormed) =>{
   }
 
 
-
-  if(!(Array.isArray(bandMembers)) && !(Array.isArray(genre))){
+  if(!(Array.isArray(bandMembers)) || !(Array.isArray(genre))){
+    
     throw new Error("ERROR: It is not an array");
-  }else if (bandMembers.length === 0 || genre.length === 0) {
+  }
+  else if (bandMembers.length === 0 || genre.length === 0) {
     throw new Error("ERROR: Array is empty"); 
   }else{
     for (let i = 0; i < bandMembers.length; i += 1) {
@@ -66,7 +67,7 @@ if(isNaN(yearFormed)){
 }
 
 if(yearFormed < 1900 || yearFormed > (new Date().getFullYear)){
-  throw new Error('Error: yearFormed paeameter is wrong')
+  throw new Error('Error: yearFormed parameter is wrong')
 }
 
 
@@ -91,6 +92,7 @@ const newId = insertInfo.insertedId.toString();
 return await get(newId);
 
 }
+
 
 const get = async (id) => {
   if(!id){
@@ -124,6 +126,7 @@ const get = async (id) => {
   
 }
 
+
 const getAll = async () => {
   const bandsCollection = await bands();
 
@@ -135,6 +138,7 @@ const getAll = async () => {
   }
   return res;
 }
+
 
 const remove = async (id) => {
   if(!(id)){
@@ -170,6 +174,7 @@ const remove = async (id) => {
   return band.name + " has been successfully deleted!";
 
 }
+
 
 const update = async (id, name, genre, website, recordLabel, bandMembers, yearFormed) =>{
 
@@ -254,7 +259,7 @@ if(isNaN(yearFormed)){
 }
 
 if(yearFormed < 1900 || yearFormed > (new Date().getFullYear)){
-  throw new Error('Error: yearFormed paeameter is wrong')
+  throw new Error('Error: yearFormed parameter is wrong')
 }
 
 let bandUpdateInfo = {
@@ -274,7 +279,7 @@ const bandsCollection = await bands();
 const banddata = await bandsCollection.findOne({ _id: id });
 
 if (banddata === null) {
-    throw new Error("No restraurant with id: ${id} present");
+    throw new Error("No band with id: ${id} present");
 }
 
 let checkname = banddata.name === name;
@@ -284,7 +289,7 @@ let checkyearFormed = banddata.yearFormed === yearFormed;
 
 
 let arr1 = [];
-arr1 = banddate.genre;
+arr1 = banddata.genre;
 
 let arr2 = [];
 arr2 = genre;
@@ -304,7 +309,7 @@ else{
 }
 
 let arr3 = [];
-arr3 = banddate.bandMembers;
+arr3 = banddata.bandMembers;
 
 let arr4 = [];
 arr4 = bandMembers;
@@ -393,6 +398,12 @@ module.exports = {
   get,
   getAll,
   remove,
-  rename,
   update
 };
+
+// async function Main(){
+// //  console.log(await create('Naresh band',123,"http://www.pinkfloydRocks.com","EMI",["Roger Waters", "David Gilmour", "Nick Mason", "Richard Wright", "Sid Barrett" ],1985));
+//   console.log(await getAll());
+// }
+
+// Main()

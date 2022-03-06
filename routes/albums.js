@@ -3,9 +3,7 @@ const router = express.Router();
 const data = require('../data');
 const albums = data.albums;
 const collections = require('../config/mongoCollection');
-
 const bands1 = collections.bands;
-
 const { ObjectId } = require('mongodb');
 
 router.get('/:id', async (req,res) => {
@@ -17,7 +15,7 @@ router.get('/:id', async (req,res) => {
         let data = await albums.getAll(req.params.id);
 
         if(data.length === 0){
-            res.status(404).json({error:reviews});
+            res.status(404).json({error:data});
             return;
         }
         res.status(200).json(data);
@@ -30,11 +28,11 @@ router.get('/:id', async (req,res) => {
 router.post('/:id', async (req,res) =>{
     const data = req.body;
     if(!data){
-        res.status(400).json({error: "You must provide a data to create a review"});
+        res.status(400).json({error: "You must provide a data to create a album"});
         return;
     }
     if(Object.keys(data).length === 0){
-        res.status(400).json({ error: 'You must provide data to create a review'});
+        res.status(400).json({ error: 'You must provide data to create a album'});
         return;
       }
     
@@ -48,7 +46,7 @@ router.post('/:id', async (req,res) =>{
         return;
       }
     
-      if(Object.keys(req.body).length > 5 || Object.keys(req.body).length < 5){
+      if(Object.keys(req.body).length > 4 || Object.keys(req.body).length < 4){
         res.status(400).json({ error: 'Current object does not match with given schema '});
         return;
       } 
@@ -79,12 +77,14 @@ router.post('/:id', async (req,res) =>{
         return;
       }
 
-     const bands = await bands1();
+     
 
-     const band = await bands.findOne({_id: req.params.id });
+    const bandsCollection = await bands1();
+
+     const band = await bandsCollection.findOne({_id: req.params.id });
 
      if(band == null){
-        res.status(400).json({ error: 'No restraurant with id is present'});
+        res.status(400).json({ error: 'No bands with id is present'});
       return;
      }
 
@@ -92,13 +92,13 @@ router.post('/:id', async (req,res) =>{
         res.status(400).json({ error: 'Rating cannot be string type.'});
         return;
      }
-     if(data.rating > 1 || data.rating < 5){
+     if(data.rating < 1 || data.rating > 5){
         res.status(400).json({ error: 'Rating should be between 1 to 5'});
         return;
      }
 
      let date = new Date(data.releaseDate);
-     if(isValidDate(date)){
+     if(!isValidDate(date)){
        res.status(400).json({message:'Release date should be in valid data format.'});
        return;
      }
@@ -145,43 +145,37 @@ router.post('/:id', async (req,res) =>{
       }
       else{
         res.status(400).json({error : "Error tracks need to be an Array"});
-        
       }
 
 
       req.params.id,data.title,data.releaseDate,data.tracks,data.rating
       try {
         const { title, releaseDate, tracks, rating } = data;
-        const newAlbum = await reviewsData.create(req.params.id.toString(), title, releaseDate, tracks, rating);
+        const newAlbum = await albums.create(req.params.id.toString(), title, releaseDate, tracks, rating);
         res.status(200).json(newAlbum);
     } catch (e) {
         res.status(400).json({ error: e.message });
     }
-
-
-
 });
 
-router.get('/album/:id', async (req,res)=>{
+router.get('/album/:id', async (req,res) => {
     if (!req.params.id) {
         res.status(400).json({ error: 'You must Supply an review ID to get album' });
         return;
     }
-  
     if(req.params.id.length !== 24){
       res.status(400).json({ error: 'Invalid review id'});
       return;
     }
-  
     try {
-      let data = await albums.get(req.params.id);
+      const data = await albums.get(req.params.id);
       res.status(200).json(data);
     } catch (e) {
       res.status(404).json({ error: e.message });
     }
 });
 
-router.delete('/album/:id', (req,res)=>{
+router.delete('/album/:id', async (req,res) => {
     if (!req.params.id) {
         res.status(400).json({ error: 'You must Supply an ID to delete' });
         return;
@@ -193,7 +187,7 @@ router.delete('/album/:id', (req,res)=>{
       }
       
       try {
-        let data = await albums.get(req.params.id);
+        const data = await albums.get(req.params.id);
       } catch (e) {
           res.status(404).json({ error: e.message});
           return;
@@ -256,3 +250,5 @@ function isValidDate(date) {
         throw new Error(" recordLabel parameter is empty");
       }
     }
+
+    module.exports = router;
