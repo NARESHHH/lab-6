@@ -66,7 +66,7 @@ if(isNaN(yearFormed)){
   throw new Error('ERROR: yearFormed needs to be a number');
 }
 
-if(yearFormed < 1900 || yearFormed > (new Date().getFullYear)){
+if(yearFormed < 1900 || yearFormed > 2022){
   throw new Error('Error: yearFormed parameter is wrong')
 }
 
@@ -258,7 +258,7 @@ if(isNaN(yearFormed)){
   throw new Error('ERROR: yearFormed needs to be a number');
 }
 
-if(yearFormed < 1900 || yearFormed > (new Date().getFullYear)){
+if(yearFormed < 1900 || yearFormed > 2022){
   throw new Error('Error: yearFormed parameter is wrong')
 }
 
@@ -400,10 +400,3 @@ module.exports = {
   remove,
   update
 };
-
-// async function Main(){
-// //  console.log(await create('Naresh band',123,"http://www.pinkfloydRocks.com","EMI",["Roger Waters", "David Gilmour", "Nick Mason", "Richard Wright", "Sid Barrett" ],1985));
-//   console.log(await getAll());
-// }
-
-// Main()

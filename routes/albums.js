@@ -9,9 +9,10 @@ const { ObjectId } = require('mongodb');
 router.get('/:id', async (req,res) => {
     try{
         if(!req.params.id){
-            res.status(400).json({error: "You enter bandID to get the data"});
+            res.status(400).json({error: " ERROR: Band Id required"});
             return;
         }
+        
         let data = await albums.getAll(req.params.id);
 
         if(data.length === 0){
@@ -37,12 +38,12 @@ router.post('/:id', async (req,res) =>{
       }
     
       if (!req.params.id) {
-        res.status(400).json({ error: 'You must Supply an Restaurant ID to add review' });
+        res.status(400).json({ error: 'You must Supply an band ID to add album' });
         return;
       }
     
       if(req.params.id.length !== 24){
-        res.status(400).json({ error: 'Invalid restaurant id'});
+        res.status(400).json({ error: 'Invalid band id'});
         return;
       }
     
@@ -160,11 +161,11 @@ router.post('/:id', async (req,res) =>{
 
 router.get('/album/:id', async (req,res) => {
     if (!req.params.id) {
-        res.status(400).json({ error: 'You must Supply an review ID to get album' });
+        res.status(400).json({ error: 'You must Supply an album ID to get album' });
         return;
     }
     if(req.params.id.length !== 24){
-      res.status(400).json({ error: 'Invalid review id'});
+      res.status(400).json({ error: 'Invalid album id'});
       return;
     }
     try {
@@ -175,7 +176,7 @@ router.get('/album/:id', async (req,res) => {
     }
 });
 
-router.delete('/album/:id', async (req,res) => {
+router.delete('/:id', async (req,res) => {
     if (!req.params.id) {
         res.status(400).json({ error: 'You must Supply an ID to delete' });
         return;

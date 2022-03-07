@@ -1,10 +1,8 @@
+
 const { ObjectId } = require('mongodb');
-
-const collections = require("../config/mongoCollection");
-
+const collections = require('../config/mongoCollection');
 const bands = collections.bands;
-
-const banddata = require('./bands');
+const band = require('./bands');
 
 const create = async (bandId, title, releaseDate, tracks, rating) => {
 
@@ -30,11 +28,12 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
        throw new Error("Invalid bandId parameter passed");
      }
 
-     const bands = await bands1();
+     const bandCollection = await bands();
 
-     const band = await bands.findOne({_id: bandId });
+     const banddata = await bandCollection.findOne({_id: bandId });
 
-     if(band == null){
+     
+     if(banddata == null){
        throw new Error("No band with id is present");
      }
 
@@ -46,10 +45,13 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
      }
 
      let date = new Date(releaseDate);
-     if(!isValidDate(date)){
-       throw new Error('Release date should be in valid data format.');
-       
-     }
+     
+    if (Object.prototype.toString.call(date) === "[object Date]") {
+      if (isNaN(date.getTime())) {
+        throw new Error('Review Date should be a valid date format.');
+        
+      } 
+    }    
 
      let dd = String(date.getDate()).padStart(2,'0');
      let mm = String(date.getMonth() + 1).padStart(2,'0');
@@ -72,6 +74,7 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
       throw new Error("Error: date cannot cannot be negative");
       
      }
+     
      if( mm > 12){
       throw new Error("Error: month greater than 12");
       
@@ -105,12 +108,12 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
       }
 
       
-      const bandsCollection = await bands1();
+     // const bandsCollection = await bands();
 
       let totalRating = 0;
       let c = 0;
 
-      let albums = band.albums;
+      let albums = banddata.albums;
 
       
       if(albums.length !== 0){
@@ -127,17 +130,17 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
 
       const bandUpdateInfo = {
         
-          name : band.name,
-          genre: band.genre,
-          website : band.website,
-          recordLabel: band.recordLabel,
-          bandMembers: band.bandMembers,
-          yearFormed: band.yearFormed,
+          name : banddata.name,
+          genre: banddata.genre,
+          website : banddata.website,
+          recordLabel: banddata.recordLabel,
+          bandMembers: banddata.bandMembers,
+          yearFormed: banddata.yearFormed,
           albums: albums,
           overallRating: overallRatingAverage,
       }
 
-      const updatedInfo = await bandsCollection.updateOne(
+      const updatedInfo = await bandCollection.updateOne(
         {_id:bandId},{$set : bandUpdateInfo}
       );
 
@@ -145,7 +148,8 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
         throw "Could not update bands successfully";
       }
 
-      const bandData = await banddata.get(bandId.toString());
+
+      const bandData = await band.get(bandId.toString());
 
       for(let ele of bandData.albums){
         ele._id = ele._id.toString();
@@ -156,174 +160,6 @@ const create = async (bandId, title, releaseDate, tracks, rating) => {
         return bandData;
       }
 };
-
-const getAll =  async (bandId) => {
-  if(!(bandId)){
-    throw new Error("ERROR: Id parameter required !!!!!");
-  }
-  if(typeof bandId !== 'string'){
-    throw new Error("ERROR: id parameter need to be type of string");
-  }
-  
-  if (bandId == null || bandId.trim() === ''|| bandId === undefined ){
-    throw new Error("parameter is empty");
-  }
-
-  if (typeof bandId === "string") {
-      bandId = ObjectId(bandId);
-  } else if (!(bandId instanceof ObjectId)) {
-      throw new Error("ERROR: Id parameter needs to be object type");
-  }
-  const bandsCollection = await bands1();
-  const band = await bandsCollection.find({_id : bandId});
-
-  if(band === null){
-    throw new Error("Error: No band with following details found");
-  }
-  
-  let albums = await banddata.get(bandId.toString());
-  
-  
-  let albumsss = albums.albums;
-  
-  for(let ele of albumsss){
-    ele._id = ele._id.toString();
-  }
-
-  return albumsss;
-}
-
-const get = async (albumId) => {
-  if(!albumId){
-    throw new Error("Error: Album Id required");
-  }
-  if(albumId.length !== 24){
-    throw new Error("Error : Invalid Album Id");
-  }
-  if(typeof albumId !== 'string'){
-    throw new Error("ERROR: id parameter need to be type of string");
-  }
-  
-  if (albumId == null || albumId.trim() === ''|| albumId === undefined ){
-    throw new Error("parameter is empty");
-  }
-
-  if (typeof albumId === "string") {
-      bandId = ObjectId(albumId);
-  } else if (!(albumId instanceof ObjectId)) {
-      throw new Error("ERROR: Id parameter needs to be object type");
-  }
-
-  const bandsCollection = await bands();
-  const bandData = await bandsCollection.findOne({"albums._id": albumId});
-  
-  const allbands = await banddata.getAll();
-  console.log(allbands);
-  if(bandData === null){
-    throw new Error(`No bands with id ${albumId}`);
-  }
-
-  if(bandData.albums.length === 0){
-    return bandData.albums;
-  }
-  for(let albums of bandData.albums){
-    if(albums._id.toString() === albumId.toString()){
-      return albums;
-    }
-  }
-
-}
-
-const remove = async () => {
-  if(!albumId){
-    throw new Error("Error: Album Id required");
-  }
-  if(albumId.length !== 24){
-    throw new Error("Error : Invalid Album Id");
-  }
-  if(typeof albumId !== 'string'){
-    throw new Error("ERROR: id parameter need to be type of string");
-  }
-  
-  if (albumId == null || albumId.trim() === ''|| albumId === undefined ){
-    throw new Error("parameter is empty");
-  }
-
-  if (typeof albumId === "string") {
-      bandId = ObjectId(albumId);
-  } else if (!(albumId instanceof ObjectId)) {
-      throw new Error("ERROR: Id parameter needs to be object type");
-  }
-
-  var rating = 0;
-  const bandsCollection = await bands();
-  const bandData = await bandsCollection.findOne({'albums._id' : albumId });
-  if(bandData === null ){
-    throw new Error(`No band with id ${albumId}`);
-  }else{
-    for(let album of bandData.albums){
-      if(album._id.toString() === albumId.toString()){
-        rating  = album.rating;
-      }
-    }
-  }
-
-  let totalRating = 0;
-  let c = 0;
-
-  let albums = bands.albums;
-
-  if(albums.length !== 0){
-    for(let a of albums){
-      totalRating = totalRating + a.rating;
-      c=c+1;
-    }
-  }
-
-  let overallRatingAverage = (totalRating-rating) / (count - 1);
-  overallRatingAverage = Math.round((overallRatingAverage + Number.EPSILON) * 100) / 100;
-
-  let bandUpdateInfo = {
-    overallRating: overalRatingAverage
-}
-
-
-const updatedInfo = await bandsCollection.updateOne(
-    { _id: bandData._id },
-    { $pull: { albums: { _id: albumId }}});
-
-
-if (updatedInfo.modifiedCount === 0) {
-      throw new Error('could not remove album');
-}
-else {
-  //update modifief overallRating
-  const bandData = await bandsCollection.findOne({_id: bandData._id});
-  if (bandData !== null) {
-      if(bandData.albums.length === 0){
-          bandUpdateInfo = {
-          overallRating: 0
-      }
-      }
-  }else{
-      throw new Error('Band with Id not found');
-  }
-      
-  const updatedInfo1 = await bandsCollection.updateOne(
-          { _id: bandData._id },{ $set: bandUpdateInfo}
- );        
-  
-      if (updatedInfo1.modifiedCount === 0) {
-          throw new Error('Could not update band successfully');
-      }
-      return {"AlbumId": albumId.toString(), "deleted": true};
-  }
-
-}
-
-function isValidDate(date) {
-  return date && Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date.getTime());
-}
 
 function checkStrings(bandId, title, releaseDate){
     if (!(typeof bandId == 'string')) {
@@ -371,15 +207,178 @@ function checkStrings(bandId, title, releaseDate){
     }
   }
 
-  module.exports = {
-    create,
-    getAll,
-    get,
-    remove
 
+
+const getAll = async (bandId) => {
+  if(!bandId){
+    throw new Error("ERROR: BandId parameter required");
+  }
+  
+  if(typeof bandId !== 'string'){
+    throw new Error("ERROR: BandID needs to be a String")
+  }
+  if (bandId == null || bandId.trim() === ''|| bandId === undefined ){
+    throw new Error("ERROR: bandId parameter is empty");
+  }
+  if (typeof bandId === "string") {
+    bandId = ObjectId(bandId);
+  } else if (!(bandId instanceof ObjectId)) {
+    throw new Error("ERROR: Id parameter needs to be object type");
   }
 
-  async function Main(){
-   // console.log(await get("622410b8b7460b5744beb7f9"));
+  const bandCollection = await bands();
+  const banddata = await bandCollection.findOne({_id : bandId})
+
+  if(banddata == null ){
+    throw new error("No bands with the bandId present");
   }
-  Main()
+
+  let albums = banddata.albums;
+
+  for(let element of albums){
+    element._id = element._id.toString();
+  }
+  return albums;
+
+}
+const get = async (albumId)=>{
+
+  if(!albumId){
+    throw new Error("Error: Album Id required");
+  }
+  if(albumId.length !== 24){
+    throw new Error("Error : Invalid Album Id");
+  }
+  if(typeof albumId !== 'string'){
+    throw new Error("ERROR: id parameter need to be type of string");
+  }
+  
+  if (albumId == null || albumId.trim() === ''|| albumId === undefined ){
+    throw new Error("parameter is empty");
+  }
+
+  if (typeof albumId === "string") {
+      albumId = ObjectId(albumId);
+  } else if (!(albumId instanceof ObjectId)) {
+      throw new Error("ERROR: Id parameter needs to be object type");
+  }
+  
+  const bandCollection = await bands();
+
+  const banddata = await bandCollection.findOne({'albums._id' : albumId});
+
+  if (banddata === null)  {
+    throw new Error(`No album with id ${albumId}`);
+  }
+
+  if (banddata.albums.length === 0) {
+    return banddata.albums;
+  }
+ 
+for (let album of banddata.albums) {
+    if (album._id.toString() === albumId.toString()) {
+      album._id = album._id.toString();
+      return album;
+    }
+}
+
+  
+}
+
+const remove = async (albumId)=>{
+  if(!albumId){
+    throw new Error("Error: Album Id required");
+  }
+  if(albumId.length !== 24){
+    throw new Error("Error : Invalid Album Id");
+  }
+  if(typeof albumId !== 'string'){
+    throw new Error("ERROR: id parameter need to be type of string");
+  }
+  
+  if (albumId == null || albumId.trim() === ''|| albumId === undefined ){
+    throw new Error("parameter is empty");
+  }
+
+  if (typeof albumId === "string") {
+      albumId = ObjectId(albumId);
+  } else if (!(albumId instanceof ObjectId)) {
+      throw new Error("ERROR: Id parameter needs to be object type");
+  }
+
+  var rating = 0;
+
+  const bandCollection = await bands();
+
+  const banddata = await bandCollection.findOne({'albums._id': albumId});
+
+    if(banddata === null ){
+    throw new Error(`No album with id ${albumId}`);
+  }else{
+    for(let album of banddata.albums){
+      if(album._id.toString() === albumId.toString()){
+        rating  = album.rating;
+      }
+    }
+  }
+
+  let totalRating = 0;
+  let c = 0;
+
+  let albums = banddata.albums;
+
+  if(albums.length !== 0){
+    for(let a of albums){
+      totalRating = totalRating + a.rating;
+      c=c+1;
+    }
+  }
+
+  let overallRatingAverage = (totalRating-rating) / (c - 1);
+  overallRatingAverage = Math.round((overallRatingAverage + Number.EPSILON) * 100) / 100;
+
+  let bandUpdateInfo = {
+    overallRating: overallRatingAverage
+  }
+
+
+const updatedInfo = await bandCollection.updateOne(
+    { _id: banddata._id },
+    { $pull: { albums: { _id: albumId }}});
+
+
+if (updatedInfo.modifiedCount === 0) {
+      throw new Error('could not remove album');
+}
+else {
+  //update modifief overallRating
+  const bandData = await bandCollection.findOne({_id: banddata._id});
+  if (bandData !== null) {
+      if(bandData.albums.length === 0){
+          bandUpdateInfo = {
+          overallRating: 0
+      }
+      }
+  }else{
+      throw new Error('Band with Id not found');
+  }
+      
+  const updatedInfo1 = await bandCollection.updateOne(
+          { _id: bandData._id },{ $set: bandUpdateInfo}
+ );        
+  
+      if (updatedInfo1.modifiedCount === 0) {
+          throw new Error('Could not update band successfully');
+      }
+      return {"AlbumId": albumId.toString(), "deleted": true};
+  }
+
+
+}
+
+module.exports={
+  get,
+  getAll,
+  create,
+  remove
+}
